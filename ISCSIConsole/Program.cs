@@ -24,13 +24,14 @@ namespace ISCSIConsole
             Application.ThreadException += new ThreadExceptionEventHandler(Application_ThreadException);
             AppDomain.CurrentDomain.UnhandledException += new UnhandledExceptionEventHandler(CurrentDomain_UnhandledException);
 
-            if (args.Length > 0)
+            bool autoStartLaunch = false;
+            foreach (string arg in args)
             {
-                if (args[0] == "/help")
+                if (String.Equals(arg, "/autostart", StringComparison.OrdinalIgnoreCase))
                 {
-                    
+                    autoStartLaunch = true;
                 }
-                if (args[0] == "/log")
+                else if (String.Equals(arg, "/log", StringComparison.OrdinalIgnoreCase))
                 {
                     string path = Path.GetDirectoryName(System.Reflection.Assembly.GetEntryAssembly().Location);
                     if (!path.EndsWith(@"\"))
@@ -44,18 +45,29 @@ namespace ISCSIConsole
                         MessageBox.Show("Cannot open log file", "Error");
                     }
                 }
-                else
+                else if (String.Equals(arg, "/help", StringComparison.OrdinalIgnoreCase))
                 {
                     StringBuilder builder = new StringBuilder();
                     builder.AppendLine("Command line arguments:");
-                    builder.AppendLine("/log - will write log file to executable directory");
+                    builder.AppendLine("/log - write log file to executable directory");
+                    builder.AppendLine("/autostart - restore saved targets and start minimized");
+                    MessageBox.Show(builder.ToString(), "iSCSI Console");
+                    return;
+                }
+                else
+                {
+                    StringBuilder builder = new StringBuilder();
+                    builder.AppendLine("Unknown command line argument: " + arg);
+                    builder.AppendLine("/log - write log file to executable directory");
+                    builder.AppendLine("/autostart - restore saved targets and start minimized");
                     MessageBox.Show(builder.ToString(), "Error");
                     return;
                 }
             }
+
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
-            Application.Run(new MainForm());
+            Application.Run(new MainForm(autoStartLaunch));
         }
 
         public static void Application_ThreadException(object sender, ThreadExceptionEventArgs e)
