@@ -1,0 +1,37 @@
+name: Build iSCSIConsole
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - autostart
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup NuGet
+        uses: NuGet/setup-nuget@v2
+
+      - name: Setup MSBuild
+        uses: microsoft/setup-msbuild@v2
+
+      - name: Restore
+        run: dotnet restore ISCSIConsole.sln
+
+      - name: Build net472
+        run: dotnet build ISCSIConsole/ISCSIConsole.csproj -c Release -f net472 --no-restore
+
+      - name: List build output
+        shell: powershell
+        run: Get-ChildItem -Recurse ISCSIConsole\bin\Release
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: iSCSIConsole-net472
+          path: ISCSIConsole/bin/Release/net472/**
