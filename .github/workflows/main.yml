@@ -26,24 +26,26 @@ jobs:
       - name: Install ILRepack
         shell: powershell
         run: |
-          dotnet tool install --global dotnet-ilrepack --version 2.0.46
-
-      - name: Prepare ILRepack path
-        shell: powershell
-        run: |
-          $tool = Get-Command ilrepack
-
-          Write-Host "ILRepack source:"
-          Write-Host $tool.Source
-
           New-Item -ItemType Directory -Force "C:\Program Files\ILRepack"
 
-          Copy-Item $tool.Source "C:\Program Files\ILRepack\ILRepack.exe"
+          dotnet tool install dotnet-ilrepack `
+            --version 2.0.46 `
+            --tool-path "C:\Program Files\ILRepack"
 
-          Write-Host "Expected file exists:"
+      - name: Verify ILRepack
+        shell: powershell
+        run: |
+          Write-Host "=== ILRepack directory ==="
+          Get-ChildItem "C:\Program Files\ILRepack" -Force
+
+          Write-Host "=== EXE exists ==="
           Test-Path "C:\Program Files\ILRepack\ILRepack.exe"
 
-          Get-ChildItem "C:\Program Files\ILRepack"
+          Write-Host "=== Store exists ==="
+          Test-Path "C:\Program Files\ILRepack\.store"
+
+          Write-Host "=== Run ILRepack ==="
+          & "C:\Program Files\ILRepack\ILRepack.exe" /help
 
       - name: Build net472
         run: dotnet build ISCSIConsole/ISCSIConsole.csproj -c Release -f net472 --no-restore
