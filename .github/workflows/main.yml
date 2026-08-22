@@ -35,17 +35,21 @@ jobs:
       - name: Verify ILRepack
         shell: powershell
         run: |
-          Write-Host "=== ILRepack directory ==="
-          Get-ChildItem "C:\Program Files\ILRepack" -Force
+          $exeExists = Test-Path "C:\Program Files\ILRepack\ILRepack.exe"
+          $storeExists = Test-Path "C:\Program Files\ILRepack\.store"
 
-          Write-Host "=== EXE exists ==="
-          Test-Path "C:\Program Files\ILRepack\ILRepack.exe"
+          Write-Host "EXE exists: $exeExists"
+          Write-Host "Store exists: $storeExists"
 
-          Write-Host "=== Store exists ==="
-          Test-Path "C:\Program Files\ILRepack\.store"
+          if (-not $exeExists) {
+            throw "ILRepack.exe not found"
+          }
 
-          Write-Host "=== Run ILRepack ==="
-          & "C:\Program Files\ILRepack\ILRepack.exe" /help
+          if (-not $storeExists) {
+            throw "ILRepack .store directory not found"
+          }
+
+          Write-Host "ILRepack installation OK"
 
       - name: Build net472
         run: dotnet build ISCSIConsole/ISCSIConsole.csproj -c Release -f net472 --no-restore
