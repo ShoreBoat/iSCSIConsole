@@ -20,14 +20,10 @@ jobs:
       - name: Setup MSBuild
         uses: microsoft/setup-msbuild@v2
 
-      - name: Restore
-        run: dotnet restore ISCSIConsole.sln
-
       - name: Install ILRepack
         shell: powershell
         run: |
           New-Item -ItemType Directory -Force "C:\Program Files\ILRepack"
-
           dotnet tool install dotnet-ilrepack `
             --version 2.0.46 `
             --tool-path "C:\Program Files\ILRepack"
@@ -37,22 +33,20 @@ jobs:
         run: |
           $exeExists = Test-Path "C:\Program Files\ILRepack\ILRepack.exe"
           $storeExists = Test-Path "C:\Program Files\ILRepack\.store"
-
           Write-Host "EXE exists: $exeExists"
           Write-Host "Store exists: $storeExists"
+          if (-not $exeExists) { throw "ILRepack.exe not found" }
+          if (-not $storeExists) { throw "ILRepack .store directory not found" }
 
-          if (-not $exeExists) {
-            throw "ILRepack.exe not found"
-          }
-
-          if (-not $storeExists) {
-            throw "ILRepack .store directory not found"
-          }
-
-          Write-Host "ILRepack installation OK"
+      - name: Restore net472
+        shell: powershell
+        run: |
+          msbuild ISCSIConsole/ISCSIConsole.csproj /t:Restore /p:TargetFramework=net472 /p:RestoreIgnoreFailedSources=true
 
       - name: Build net472
-        run: dotnet build ISCSIConsole/ISCSIConsole.csproj -c Release -f net472 --no-restore
+        shell: powershell
+        run: |
+          msbuild ISCSIConsole/ISCSIConsole.csproj /t:Build /p:Configuration=Release /p:TargetFramework=net472 /p:RestoreIgnoreFailedSources=true
 
       - name: List build output
         shell: powershell
