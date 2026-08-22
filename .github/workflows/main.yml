@@ -20,24 +20,6 @@ jobs:
       - name: Setup MSBuild
         uses: microsoft/setup-msbuild@v2
 
-      - name: Install ILRepack
-        shell: powershell
-        run: |
-          New-Item -ItemType Directory -Force "C:\Program Files\ILRepack"
-          dotnet tool install dotnet-ilrepack `
-            --version 2.0.46 `
-            --tool-path "C:\Program Files\ILRepack"
-
-      - name: Verify ILRepack
-        shell: powershell
-        run: |
-          $exeExists = Test-Path "C:\Program Files\ILRepack\ILRepack.exe"
-          $storeExists = Test-Path "C:\Program Files\ILRepack\.store"
-          Write-Host "EXE exists: $exeExists"
-          Write-Host "Store exists: $storeExists"
-          if (-not $exeExists) { throw "ILRepack.exe not found" }
-          if (-not $storeExists) { throw "ILRepack .store directory not found" }
-
       - name: Restore net472
         shell: powershell
         run: |
@@ -46,15 +28,15 @@ jobs:
       - name: Build net472
         shell: powershell
         run: |
-          msbuild ISCSIConsole/ISCSIConsole.csproj /t:Build /p:Configuration=Release /p:TargetFramework=net472 /p:RestoreIgnoreFailedSources=true
+          msbuild ISCSIConsole/ISCSIConsole.csproj /t:Build /p:Configuration=Debug /p:TargetFramework=net472 /p:RestoreIgnoreFailedSources=true
 
       - name: List build output
         shell: powershell
         run: |
-          Get-ChildItem -Recurse ISCSIConsole\bin\Release
+          Get-ChildItem -Recurse ISCSIConsole\bin\Debug\net472
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: iSCSIConsole-net472
-          path: ISCSIConsole/bin/Release/net472/**
+          name: iSCSIConsole-net472-debug
+          path: ISCSIConsole/bin/Debug/net472/**
