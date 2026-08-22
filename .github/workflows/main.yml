@@ -26,20 +26,32 @@ jobs:
       - name: Install ILRepack
         shell: powershell
         run: |
-          choco install ilrepack -y
+          dotnet tool install --global dotnet-ilrepack --version 2.0.46
 
-      - name: Verify ILRepack
+      - name: Prepare ILRepack path
         shell: powershell
         run: |
-          Get-ChildItem "C:\Program Files\ILRepack" -Recurse
+          $tool = Get-Command ilrepack
+
+          Write-Host "ILRepack source:"
+          Write-Host $tool.Source
+
+          New-Item -ItemType Directory -Force "C:\Program Files\ILRepack"
+
+          Copy-Item $tool.Source "C:\Program Files\ILRepack\ILRepack.exe"
+
+          Write-Host "Expected file exists:"
           Test-Path "C:\Program Files\ILRepack\ILRepack.exe"
+
+          Get-ChildItem "C:\Program Files\ILRepack"
 
       - name: Build net472
         run: dotnet build ISCSIConsole/ISCSIConsole.csproj -c Release -f net472 --no-restore
 
       - name: List build output
         shell: powershell
-        run: Get-ChildItem -Recurse ISCSIConsole\bin\Release
+        run: |
+          Get-ChildItem -Recurse ISCSIConsole\bin\Release
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
