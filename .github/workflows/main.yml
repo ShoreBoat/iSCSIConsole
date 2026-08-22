@@ -23,6 +23,17 @@ jobs:
       - name: Restore
         run: dotnet restore ISCSIConsole.sln
 
+      - name: Install ILRepack
+        shell: powershell
+        run: |
+          choco install ilrepack -y
+
+      - name: Verify ILRepack
+        shell: powershell
+        run: |
+          Get-ChildItem "C:\Program Files\ILRepack" -Recurse
+          Test-Path "C:\Program Files\ILRepack\ILRepack.exe"
+
       - name: Build net472
         run: dotnet build ISCSIConsole/ISCSIConsole.csproj -c Release -f net472 --no-restore
 
